@@ -1,9 +1,9 @@
 <?php
 // CROS PARA ABRIR URL NO NAVEGADOR
 
-header("Access-Control-Allow_Origin: *");
-header("Access-Control-Allow_Headers: *");
-header("Access-Control-Allow_Methods: *");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: *");
+//header("Access-Control-Allow_Methods: *");
 
 // REQUISIÇÃO E CONEXAO
 include 'DbConnect.php';
@@ -16,29 +16,32 @@ switch($method) {
 
 // LISTAR DADOS 
 
-    casse "GET":
+    case "GET":
     $sql = "SELECT * FROM users";
     $path = explode('/', $_SERVER['REQUEST_URI']);
-    if(isset($path[3]) && is_nuemric($path[3])) {
-        $sql .= "WHERE id = :id";
-        $stmt->prepare($sql);
+    if(isset($path[3]) && is_numeric($path[3])) {
+        $sql = "SELECT * FROM users WHERE id = :id";
+        $stmt = $conn->prepare($sql);
         $stmt->bindParam(':id', $path[3]);
-    }else{
+        $stmt->execute();
+        $users = $stmt->fetch(PDO::FETCH_ASSOC);
+     }else{
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+      
     }
+    echo json_encode($users);
     
-    echo json_encode($user);
     break;
 
        // INSERIR DADOS NO BANCO DE DADOS 
 
     case "POST":
         $user = json_decode( file_get_contents('php://input') );
-        $sql = "INSERT INTO users(id, name, email, telefone) VALUES (null, :name, :email, :telefone)";
-        $conn->prepare($sql);
-        $stmt->bindParam(':name', $user->name);
+        $sql = "INSERT INTO users(id, nome, email, telefone) VALUES (null, :nome, :email, :telefone)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':nome', $user->nome);
         $stmt->bindParam(':email', $user->email);
         $stmt->bindParam(':telefone', $user->telefone);
         if($stmt->execute()) {
@@ -52,10 +55,10 @@ switch($method) {
 
     case "PUT":
         $user = json_decode( file_get_contents('php://input') );
-        $sql = "UPDATE users SET name = :name, email = :email, telefone = :telefone WHERE id = :id)";
-        $conn->prepare($sql);
+        $sql = "UPDATE users SET nome =:nome, email =:email, telefone =:telefone WHERE id =:id";
+        $stmt = $conn->prepare($sql);
         $stmt->bindParam(':id', $user->id);
-        $stmt->bindParam(':name', $user->name);
+        $stmt->bindParam(':nome', $user->nome);
         $stmt->bindParam(':email', $user->email);
         $stmt->bindParam(':telefone', $user->telefone);
         if($stmt->execute()) {
@@ -70,13 +73,11 @@ switch($method) {
 
         case "DELETE":
             $sql = "DELETE FROM users WHERE id = :id";
-            $path = explode('/', $_SERVER['REQUEST_URI']);
-           
-                $sql .= "WHERE id = :id";
-                $stmt->prepare($sql);
-                $stmt->bindParam(':id', $path[3]);
+            $path = explode('/', $_SERVER['REQUEST_URI']);           
+              
                 $stmt = $conn->prepare($sql);
-                $stmt->execute();
+                $stmt->bindParam(':id', $path[3]);              
+              
                 if($stmt->execute()) {
                     $response = ['status' => 1, 'message' => 'Deletado com sucesso'];
                 }else{
