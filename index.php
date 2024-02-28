@@ -3,7 +3,7 @@
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
-//header("Access-Control-Allow_Methods: *");
+header("Access-Control-Allow-Methods: *");
 
 // REQUISIÇÃO E CONEXAO
 include 'DbConnect.php';
